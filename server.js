@@ -1,15 +1,22 @@
 const axios = require("axios");
+const fs = require("fs");
 const jsdom = require("jsdom");
 const chalk = require("chalk");
+const cron = require("node-cron");
 const { JSDOM } = jsdom;
 
-const { URL = "https://www.thejump.tech", tags = "h1,h2,h3" } = process.env;
+const {
+  URL = "https://www.thejump.tech",
+  tags = "h1,h2,h3",
+  crontab = "* * * * *",
+} = process.env;
 
-(async () => {
+const scrape = async () => {
   try {
     // const response = await got(URL);
     // const dom = new JSDOM(response.body);
     const response = await axios(URL);
+    if (response.status !== 200) throw new Error(`GET ${URL} failed`)
     const dom = new JSDOM(response.data);
 
     let nodeList = {};
@@ -34,7 +41,31 @@ const { URL = "https://www.thejump.tech", tags = "h1,h2,h3" } = process.env;
     }
 
     console.log(chalk.yellow(`${nodeCount} headings found\n`));
+
+    // save to disk
+    // create directory
+    const dirName = `${Date.now()}`;
+    fs.mkdir(`./scrapes/${dirName}`, (dirErr) => {
+      if (dirErr) throw dirErr;
+      fs.writeFile(
+        `./scrapes/${dirName}/scrape.html`,
+        response.data,
+        (fileErr) => {
+          if (fileErr) throw fileErr;
+          console.log("The file has been saved!");
+        }
+      );
+    });
+
+    // dump html
   } catch (err) {
     console.log("err", err);
   }
-})();
+};
+
+scrape();
+
+cron.schedule(crontab, () => {
+  console.log("running a task every minute");
+  scrape();
+});
