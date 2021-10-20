@@ -1,9 +1,9 @@
 const axios = require("axios");
-const got = require("got");
 const jsdom = require("jsdom");
+const chalk = require("chalk");
 const { JSDOM } = jsdom;
 
-const { URL = "https://www.thejump.tech" } = process.env;
+const { URL = "https://www.thejump.tech", tags = "h1,h2,h3" } = process.env;
 
 (async () => {
   try {
@@ -12,16 +12,28 @@ const { URL = "https://www.thejump.tech" } = process.env;
     const response = await axios(URL);
     const dom = new JSDOM(response.data);
 
-    const nodeList = [
-      ...dom.window.document.querySelectorAll("h1"),
-      ...dom.window.document.querySelectorAll("h2"),
-      ...dom.window.document.querySelectorAll("h3"),
-    ];
+    let nodeList = {};
+    let nodeCount = 0;
 
-    nodeList.forEach((heading) => {
-      console.log(`Heading text: ${heading.textContent}`);
-    });
-    console.log(`${nodeList.length} headings found`);
+    const tagsToSearch = tags.split(",");
+
+    for (const tag of tagsToSearch) {
+      nodeList[tag] = {
+        nodes: [...dom.window.document.querySelectorAll(tag)],
+      };
+      nodeCount += nodeList[tag].nodes.length;
+    }
+
+    for (const tag of tagsToSearch) {
+      console.log(chalk.blue(`${tag.toUpperCase()}s found:`));
+      const { nodes } = nodeList[tag];
+      for (const node of nodes) {
+        console.log(chalk.green("Heading text:"), node.textContent.trim());
+      }
+      console.log(`\n`);
+    }
+
+    console.log(chalk.yellow(`${nodeCount} headings found\n`));
   } catch (err) {
     console.log("err", err);
   }
