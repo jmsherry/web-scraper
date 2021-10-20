@@ -3,7 +3,7 @@ const got = require("got");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
-const URL = "https://www.thejump.tech";
+const { URL = "https://www.thejump.tech" } = process.env;
 
 (async () => {
   try {
