@@ -1,9 +1,9 @@
-const axios = require("axios");
-const fs = require("fs");
-const jsdom = require("jsdom");
-const chalk = require("chalk");
-const cron = require("node-cron");
-const { JSDOM } = jsdom;
+import axios from "axios";
+import fs from "fs";
+import { JSDOM } from "jsdom";
+import chalk from "chalk";
+import cron from "node-cron";
+
 
 const {
   URL = "https://www.thejump.tech",
